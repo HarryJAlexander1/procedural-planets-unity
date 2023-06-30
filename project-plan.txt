@@ -1,0 +1,3 @@
+1. Generate high-poly icosphere
+2. Displace vertices in icosphere by applying perlin noise to create planet terrain.
+3. Map textures to the terrain based on the height of the terrain
