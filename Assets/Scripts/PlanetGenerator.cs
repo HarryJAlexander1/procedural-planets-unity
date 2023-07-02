@@ -9,10 +9,12 @@ public class PlanetGenerator : MonoBehaviour
     public int[] meshTriangles;
     public Mesh mesh;
 
+    private IEnumerator coroutine;
+
     private void Awake()
     {
-        CreateMesh();
-        UpdateMesh();
+        coroutine = CreateMesh();
+        StartCoroutine(coroutine);
     }
 
     public class Triangle {
@@ -187,6 +189,7 @@ public class PlanetGenerator : MonoBehaviour
                     newTriangles.Add(new(a, b, c));
                 }
                 triangles = newTriangles;
+                newTriangles = new();
             }
             // set object vertices as newTriangles vertices
             foreach (Triangle t in triangles) {
@@ -216,22 +219,26 @@ public class PlanetGenerator : MonoBehaviour
     // displace vertices with perlin noise
 
     // Create mesh
-    void CreateMesh() {
+    private IEnumerator CreateMesh() {
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
         // create icosahedron
         Icosahedron icosahedron = new Icosahedron();
         // create icosphere
-        Icosphere icosphere = new(icosahedron, 1);
+        Icosphere icosphere = new(icosahedron, 5);
         // assign mesh vertices
         meshVertices = icosphere.Vertices.ToArray();
         // assign mesh triangles
         List<int> meshTrianglesList = new();
         for (int i=0; i < meshVertices.Length; i++) {
             meshTrianglesList.Add(i);
+            if (meshTrianglesList.Count % 3 == 0) {
+                meshTriangles = meshTrianglesList.ToArray();
+                Debug.Log("Triangles: " + meshTriangles.Length * 0.33333);
+                UpdateMesh();
+                yield return new WaitForSeconds(0.001f);
+            }
         }
-        meshTriangles = meshTrianglesList.ToArray();
-        Debug.Log("Triangles: " + meshTriangles.Length * 0.33333);
     }
     void UpdateMesh()
     {
