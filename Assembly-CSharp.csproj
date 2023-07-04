@@ -59,6 +59,7 @@
     <Compile Include="Assets\Scripts\CameraController.cs" />
     <Compile Include="Assets\Scripts\PlanetGenerator.cs" />
     <Compile Include="Assets\Scripts\GameManager.cs" />
+    <Compile Include="Assets\Scripts\PlanetController.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

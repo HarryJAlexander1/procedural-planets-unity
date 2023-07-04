@@ -213,11 +213,11 @@ public class PlanetGenerator : MonoBehaviour
         //float time = Time.time;
         float random = UnityEngine.Random.Range(0f, 100f);
         List<Vector3> displacedVertices = new List<Vector3>();
-        float displacementScale = 0.12f;
+        float displacementScale = 0.05f;
         foreach (Vector3 vertex in vertices)
         {
             
-            Vector3 displacedVertex = vertex + ComputePerlinOffset(vertex, random, 1.8f) * displacementScale;
+            Vector3 displacedVertex = vertex + ComputePerlinOffset(vertex, random, 2f) * displacementScale;
             displacedVertices.Add(displacedVertex);
         }
 
