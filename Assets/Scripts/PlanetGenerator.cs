@@ -9,12 +9,9 @@ public class PlanetGenerator : MonoBehaviour
     public int[] meshTriangles;
     public Mesh mesh;
 
-    private IEnumerator coroutine;
-
     private void Awake()
     {
-        coroutine = CreateMesh();
-        StartCoroutine(coroutine);
+        CreateMesh();
     }
 
     public class Triangle {
@@ -203,23 +200,42 @@ public class PlanetGenerator : MonoBehaviour
 
         private Vector3 ComputeMiddlePoint(Vector3 vertexA, Vector3 vertexB)
         {
-           
             Vector3 midpoint = (vertexA + vertexB);
-
-            //float length = (float)Math.Sqrt(Math.Pow(midpoint.x, 2) + Math.Pow(midpoint.y, 2) + Math.Pow(midpoint.z, 2));
-
-
-            //midpoint = midpoint.normalized;
             midpoint.Normalize();
-   
             return midpoint * 2;
         }
     }
 
     // displace vertices with perlin noise
+    private List<Vector3> DisplaceVertices(List<Vector3> vertices)
+    {
 
+        //float time = Time.time;
+        float random = UnityEngine.Random.Range(0f, 100f);
+        List<Vector3> displacedVertices = new List<Vector3>();
+        float displacementScale = 0.12f;
+        foreach (Vector3 vertex in vertices)
+        {
+            
+            Vector3 displacedVertex = vertex + ComputePerlinOffset(vertex, random, 1.8f) * displacementScale;
+            displacedVertices.Add(displacedVertex);
+        }
+
+        return displacedVertices;
+    }
+
+    private Vector3 ComputePerlinOffset(Vector3 vertex, float time, float noiseScale)
+    {
+        float sampleX = vertex.x * noiseScale;
+        float sampleY = vertex.y * noiseScale;
+        float sampleZ = vertex.z * noiseScale;
+
+        float noiseValue = Mathf.PerlinNoise(sampleX + time, sampleY + time);
+
+        return new Vector3(sampleX, sampleY, sampleZ) * noiseValue;
+    }
     // Create mesh
-    private IEnumerator CreateMesh() {
+    private void CreateMesh() {
         mesh = new Mesh();
         GetComponent<MeshFilter>().mesh = mesh;
         // create icosahedron
@@ -227,18 +243,20 @@ public class PlanetGenerator : MonoBehaviour
         // create icosphere
         Icosphere icosphere = new(icosahedron, 5);
         // assign mesh vertices
-        meshVertices = icosphere.Vertices.ToArray();
-        // assign mesh triangles
+        List<Vector3> icosphereVertices = icosphere.Vertices;
+
+        // displace vertices using perlin noise
+        List<Vector3> displacedVertices = DisplaceVertices(icosphereVertices);
+        meshVertices = displacedVertices.ToArray();
+
+        // create mesh triangles from vertices
         List<int> meshTrianglesList = new();
         for (int i=0; i < meshVertices.Length; i++) {
             meshTrianglesList.Add(i);
-            if (meshTrianglesList.Count % 3 == 0) {
-                meshTriangles = meshTrianglesList.ToArray();
-                Debug.Log("Triangles: " + meshTriangles.Length * 0.33333);
-                UpdateMesh();
-                yield return new WaitForSeconds(0.001f);
-            }
         }
+        meshTriangles = meshTrianglesList.ToArray();
+        Debug.Log("Triangles: " + meshTriangles.Length * 0.333333);
+        UpdateMesh();
     }
     void UpdateMesh()
     {
